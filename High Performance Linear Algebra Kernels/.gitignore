@@ -1,0 +1,7 @@
+# Virtual environments
+.idea/
+cmake-build-default/
+
+#CMake
+CMakeLists.txt
+
