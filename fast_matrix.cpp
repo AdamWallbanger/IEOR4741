@@ -48,7 +48,7 @@ long long sumMatrixInlineIndex(const vector<vector<int>>& m) {
 long long sumMatrixRowPointer(const vector<vector<int>>& m) {
     long long sum = 0;
     for (int i = 0; i < SIZE; ++i) {
-        const int* p   = m[i].data();
+        const int* p   = &m[i][0];
         const int* end = p + SIZE;
         for (; p < end; ++p) {
             sum += *p;
@@ -60,7 +60,7 @@ long long sumMatrixRowPointer(const vector<vector<int>>& m) {
 long long sumMatrixSinglePointer(const vector<vector<int>>& m) {
     long long sum = 0;
     int row = 0;
-    const int* p = m[row].data();
+    const int* p = &m[row][0];
     const int* endRow = p + SIZE;
 
     const size_t total = static_cast<size_t>(SIZE) * SIZE;
@@ -68,7 +68,7 @@ long long sumMatrixSinglePointer(const vector<vector<int>>& m) {
         sum += *p++;
         if (p == endRow && k + 1 < total) {
             ++row;
-            p = m[row].data();
+            p = &m[row][0];
             endRow = p + SIZE;
         }
     }
