@@ -52,20 +52,9 @@ int main()
     column = 2;
     double* matrix = create_matrix(row,column);
     double* vector = create_vector(column);
+    double* matrixA = create_matrix(row,column);
+    double* matrixB = create_matrix(row,column);
     double result[column];
-    for (int i = 0; i < row; i++)
-    {
-        for (int j = 0; j < column; j++)
-        {
-            cout << matrix[i*column+j] << " ";
-        }
-        cout << endl;
-    }
-    cout << endl;
-    for (int i = 0; i < row; i++)
-    {
-        cout << result[i] << " ";
-    }
     delete[] matrix;
     delete[] vector;
     Timer timer;
