@@ -9,6 +9,10 @@ void multiply_mv_row_major(const double* matrix, int rows, int cols, const doubl
     assert(vector != nullptr);
     assert(result != nullptr);
     assert(rows > 0 && cols > 0);
+    if (cols != rows) {
+        std :: cerr << "Error: cols must equal rows!";
+        return; 
+    }
     for (int i = 0; i < rows; ++i){
         double sum = 0.0;
         const double* row_ptr = matrix + (size_t)i * cols;
@@ -24,6 +28,10 @@ void multiply_mv_col_major(const double* matrix, int rows, int cols, const doubl
     assert(vector != nullptr);
     assert(result != nullptr);
     assert(rows > 0 && cols > 0);
+    if (cols != rows) {
+        std :: cerr << "Error: cols must equal rows!";
+        return;
+    }
     for(int i = 0; i < rows; ++i){
         double sum = 0.0;
         for(int j = 0; j < cols; ++j){
