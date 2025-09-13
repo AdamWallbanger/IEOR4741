@@ -1,6 +1,6 @@
 #include <iostream>
 #include <chrono>
-#include <vector>
+#include <cassert>
 using namespace std;
 
 void multiply_mv_row_major(const double* matrix, int rows, int cols, const double* vector, double* result);
@@ -81,6 +81,43 @@ void multiply_mv_row_major(const double* matrix, int rows, int cols, const doubl
         for (int j = 0; j < cols; j++)
         {
             result[i] += matrix[i * cols + j] * vector[j];
+        }
+    }
+}
+void multiply_mm_naive(const double* matrixA, int rowsA, int colsA, const double* matrixB, int rowsB, int colsB, double* result)
+{
+    assert(colsA == rowsB);
+    assert(matrixA != nullptr);
+    assert(matrixB != nullptr);
+    assert(result != nullptr);
+    for (int i = 0; i < rowsA; i++)
+    {
+        for (int j = 0; j < colsA; j++)
+        {
+            double value_A = matrixA[i * colsA + j];
+            for (int k = 0; k < colsB; k++)
+            {
+                result[i * colsA + j] += value_A * matrixB[k * colsB + j];
+            }
+        }
+    }
+}
+void multiply_mm_transposed_b(const double* matrixA, int rowsA, int colsA, const double* matrixB_transposed, int rowsB, int colsB, double* result)
+{
+    //这里我没搞懂，如果matrixB_transposed传进来之前就已经是transposde过了，那直接正常乘就行了。暂时写了现场transposed
+    assert(colsA == colsB);
+    assert(matrixA != nullptr);
+    assert(matrixB_transposed != nullptr);
+    assert(result != nullptr);
+    for (int i = 0; i < rowsA; ++i) {
+        for (int j = 0; j < rowsB; ++j) {
+            double sum = 0;
+            for (int k = 0; k < colsA; ++k) {
+                double value_A = matrixA[i * colsA + k];
+                double value_B = matrixB_transposed[j * colsB + k];
+                sum += value_A * value_B;
+            }
+            result[i * rowsB + j] = sum;
         }
     }
 }
