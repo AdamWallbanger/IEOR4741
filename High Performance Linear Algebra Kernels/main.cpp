@@ -1,12 +1,28 @@
 #include <iostream>
 #include <chrono>
 #include <cassert>
+#include <cmath>
 using namespace std;
 
 void multiply_mv_row_major(const double* matrix, int rows, int cols, const double* vector, double* result);
 void multiply_mv_col_major(const double* matrix, int rows, int cols, const double* vector, double* result);
 void multiply_mm_naive(const double* matrixA, int rowsA, int colsA, const double* matrixB, int rowsB, int colsB, double* result);
 void multiply_mm_transposed_b(const double* matrixA, int rowsA, int colsA, const double* matrixB_transposed, int rowsB, int colsB, double* result);
+
+void average_time(int* time,int size,double& mean,double& std)
+{
+    double sum = 0,diff = 0;
+    for (int i = 0; i < size; i++)
+    {
+        sum += time[i];
+    }
+    mean = sum / size;
+    for (int i = 0; i < size; i++)
+    {
+        diff += (time[i] - mean) * (time[i] - mean);
+    }
+    std = sqrt(diff/size);
+}
 
 double* create_matrix(int row,int column)
 {
@@ -52,50 +68,92 @@ class Timer
 int main()
 {
     int test_dim[3] = {4,64,256};
-
     for (int i = 0; i < 3; i++)
     {
-        double result_mv[test_dim[i]];
-        double result_mm[test_dim[i]*test_dim[i]];
-        double* matrix = create_matrix(test_dim[i],test_dim[i]);
-        double* vector = create_vector(test_dim[i]);
-        double* matrixA = create_matrix(test_dim[i],test_dim[i]);
-        double* matrixB = create_matrix(test_dim[i],test_dim[i]);
-        Timer timer;
-        multiply_mv_row_major(matrix,test_dim[i],test_dim[i],vector,result_mv);
-        long long duration = timer.elapsed_microseconds();
-        cout <<test_dim[i] << " Size MV Row_major: " << duration << "ms" <<endl;
-        // Timer timer1;
-        // multiply_mv_col_major(matrix,test_dim[i],test_dim[i],vector,result);
-        // long long duration1 = timer1.elapsed_microseconds();
-        // cout <<test_dim[i] << " Size MV Col_major: " << duration1 << "ms" <<endl;
-        delete[] matrix;
-        delete[] vector;
-        Timer timer2;
-        multiply_mm_naive(matrixA,test_dim[i],test_dim[i],matrixB,test_dim[i],test_dim[i],result_mm);
-        long long duration2 = timer2.elapsed_microseconds();
-        cout <<test_dim[i] << " Size MM Naive: " << duration2 << "ms" <<endl;
-        Timer timer3;
-        multiply_mm_transposed_b(matrixA,test_dim[i],test_dim[i],matrixB,test_dim[i],test_dim[i],result_mm);
-        long long duration3 = timer3.elapsed_microseconds();
-        cout <<test_dim[i] << " Size MV Transposed: " << duration3 << "ms" <<endl;
-        delete[] matrixA;
-        delete[] matrixB;
+        int time_mv_row[10] = {0};
+        int time_mv_col [10] = {0};
+        int time_mm_navi[10] = {0};
+        int time_mm_tran[10] = {0};
+        for (int j = 0; j < 10;j++)
+        {
+            double result_mv[test_dim[i]];
+            double result_mm[test_dim[i]*test_dim[i]];
+            double* matrix = create_matrix(test_dim[i],test_dim[i]);
+            double* vector = create_vector(test_dim[i]);
+            double* matrixA = create_matrix(test_dim[i],test_dim[i]);
+            double* matrixB = create_matrix(test_dim[i],test_dim[i]);
+            Timer timer;
+            multiply_mv_row_major(matrix,test_dim[i],test_dim[i],vector,result_mv);
+            long long duration = timer.elapsed_microseconds();
+            time_mv_row[j] = duration;
+            Timer timer1;
+            multiply_mv_col_major(matrix,test_dim[i],test_dim[i],vector,result_mv);
+            long long duration1 = timer1.elapsed_microseconds();
+            time_mv_col[j] = duration1;
+            delete[] matrix;
+            delete[] vector;
+            Timer timer2;
+            multiply_mm_naive(matrixA,test_dim[i],test_dim[i],matrixB,test_dim[i],test_dim[i],result_mm);
+            long long duration2 = timer2.elapsed_microseconds();
+            time_mm_navi[j] = duration2;
+            Timer timer3;
+            multiply_mm_transposed_b(matrixA,test_dim[i],test_dim[i],matrixB,test_dim[i],test_dim[i],result_mm);
+            long long duration3 = timer3.elapsed_microseconds();
+            time_mm_tran[j] = duration3;
+            delete[] matrixA;
+            delete[] matrixB;
+        }
+        double mean,std;
+        average_time(time_mv_row,10,mean,std);
+        cout <<"Average time for " <<test_dim[i] << " Size MV Row_major: " << mean << "ms, with std of " << std << endl;
+        average_time(time_mv_col,10,mean,std);
+        cout <<"Average time for " <<test_dim[i] << " Size MV Col_major: " << mean << "ms, with std of " << std << endl;
+        average_time(time_mm_navi,10,mean,std);
+        cout <<"Average time for " <<test_dim[i] << " Size MM Naive: " << mean << "ms, with std of " << std  << endl;
+        average_time(time_mm_tran,10,mean,std);
+        cout <<"Average time for " <<test_dim[i] << " Size MM Transposed: " << mean << "ms, with std of " << std << endl;
+        cout << endl;
     }
-
     return 0;
 }
 
-void multiply_mv_row_major(const double* matrix, int rows, int cols, const double* vector, double* result)
-{
-    for (int i = 0; i < rows; i++)
-    {
-        for (int j = 0; j < cols; j++)
-        {
-            result[i] += matrix[i * cols + j] * vector[j];
+void multiply_mv_row_major(const double* matrix, int rows, int cols, const double* vector, double* result){
+    assert(matrix != nullptr);
+    assert(vector != nullptr);
+    assert(result != nullptr);
+    assert(rows > 0 && cols > 0);
+    if (cols != rows) {
+        std :: cerr << "Error: cols must equal rows!";
+        return;
+    }
+    for (int i = 0; i < rows; ++i){
+        double sum = 0.0;
+        const double* row_ptr = matrix + (size_t)i * cols;
+        for (int j = 0; j < cols; ++j){
+            sum += row_ptr[j] * vector[j];
         }
+        result[i] = sum;
     }
 }
+
+void multiply_mv_col_major(const double* matrix, int rows, int cols, const double* vector, double* result){
+    assert(matrix != nullptr);
+    assert(vector != nullptr);
+    assert(result != nullptr);
+    assert(rows > 0 && cols > 0);
+    if (cols != rows) {
+        std :: cerr << "Error: cols must equal rows!";
+        return;
+    }
+    for(int i = 0; i < rows; ++i){
+        double sum = 0.0;
+        for(int j = 0; j < cols; ++j){
+            sum += matrix[(size_t)j*rows + i ] * vector[j];
+        }
+        result[i] = sum;
+    }
+}
+
 void multiply_mm_naive(const double* matrixA, int rowsA, int colsA, const double* matrixB, int rowsB, int colsB, double* result)
 {
     assert(colsA == rowsB);
