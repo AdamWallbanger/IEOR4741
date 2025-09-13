@@ -67,6 +67,7 @@ class Timer
 
 int main()
 {
+    Timer timer0;
     int test_dim[3] = {4,64,256};
     for (int i = 0; i < 3; i++)
     {
@@ -114,6 +115,8 @@ int main()
         cout <<"Average time for " <<test_dim[i] << " Size MM Transposed: " << mean << "ms, with std of " << std << endl;
         cout << endl;
     }
+    long long duration0 = timer0.elapsed_microseconds();
+    cout << "Total Time: " << duration0 << "ms" << endl;
     return 0;
 }
 
@@ -174,7 +177,6 @@ void multiply_mm_naive(const double* matrixA, int rowsA, int colsA, const double
 }
 void multiply_mm_transposed_b(const double* matrixA, int rowsA, int colsA, const double* matrixB_transposed, int rowsB, int colsB, double* result)
 {
-    //这里我没搞懂，如果matrixB_transposed传进来之前就已经是transposde过了，那直接正常乘就行了。暂时写了现场transposed
     assert(colsA == colsB);
     assert(matrixA != nullptr);
     assert(matrixB_transposed != nullptr);
