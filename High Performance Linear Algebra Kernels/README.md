@@ -23,3 +23,5 @@
 6. We have realize that beside the matrix multiplication the most time-consuming part of our code is matrix and vector initialization, so one of our teammate tried to include <malloc.h> from C, to optimize the code's performance
 ---
 7. First of all, team work helps everyone have a small chunk of code to work on, where we divide tasks by kernel. This helps with seeing different approaches and helps everyone to learn the basic logic behind matrix operation using a laptop. The collaborative analysis phase was fun, while merging benchmarks we can see how well we have done in the coding part, and it helps to visualize the pattern. Challenges encountered was mainly not sure how to use certain functions while doing benchmark and profiling, but after figuring things out, we grant a good shape in doing certain benchmarks and profiling, and will know how to optimize codes with consideration of the hardware and some algorithm etc.
+
+PS: Windows Performance Toolkit report file size is too big to upload to github.
