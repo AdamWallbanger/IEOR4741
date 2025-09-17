@@ -46,6 +46,9 @@ private:
 
 class TradeEngine {
 public:
+    int getSig1() const { return sig1; }
+    int getSig2() const { return sig2; }
+    int getSig3() const { return sig3; }
     TradeEngine(const std::vector<MarketData>& feed)
             : market_data(feed) {}
 
@@ -53,15 +56,23 @@ public:
         for (const auto& tick : market_data) {
             // Update history
             updateHistory(tick);
+            bool b1 = signal1(tick);
+            bool b2 = signal2(tick);
+            bool b3 = signal3(tick);
+            bool b4 = false;
 
             // Apply signals
             bool buy = false, sell = false;
 
-            if (signal1(tick)) buy = true;
-            if (signal2(tick)) { if (tick.price < getAvg(tick.instrument_id)) buy = true; else sell = true; }
-            if (signal3(tick)) buy = true;
+            if (b1) { if (tick.price < 105.0) buy = true; else if (tick.price > 195.0) sell = true; }
+            if (b2) { if (tick.price < getAvg(tick.instrument_id)) buy = true; else sell = true; }
+            if (b3) { buy = true; }
+
 
             if (buy || sell) {
+                if (b1) ++sig1;
+                if (b2) ++sig2;
+                if (b3) ++sig3;
                 auto now = std::chrono::high_resolution_clock::now();
                 Order o { tick.instrument_id, tick.price + (buy ? 0.01 : -0.01), buy, now };
                 orders.push_back(o);
@@ -87,6 +98,7 @@ public:
     }
 
 private:
+    int sig1 = 0, sig2 = 0, sig3 = 0;
     const std::vector<MarketData>& market_data;
     std::vector<Order> orders;
     std::vector<long long> latencies;
@@ -144,6 +156,11 @@ int main() {
 
     engine.reportStats();
     std::cout << "Total Runtime (ms): " << runtime_ms << std::endl;
+
+    std::cout << "Orders by signal: \n"
+              << "S1=" << engine.getSig1() << "\n "
+              << "S2=" << engine.getSig2() << "\n "
+              << "S3=" << engine.getSig3() << " \n";
 
     return 0;
 }
