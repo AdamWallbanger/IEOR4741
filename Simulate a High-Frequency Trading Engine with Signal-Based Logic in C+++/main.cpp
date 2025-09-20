@@ -5,7 +5,7 @@
 #include <chrono>
 #include <cmath>
 #include <fstream>
-
+#include <deque>
 
 struct alignas(64) MarketData {
     int instrument_id;
@@ -57,15 +57,52 @@ private:
     std::vector<MarketData>& data;
 };
 
+struct VolTracker {
+    std::deque<double> window;
+    double sum = 0.0;
+    double sum_sq = 0.0;
+    int max_size;
+
+    VolTracker(int n = 10) : max_size(n) {}  // 默认窗口大小10
+
+    void add(double price) {
+        window.push_back(price);
+        sum += price;
+        sum_sq += price * price;
+
+        if ((int)window.size() > max_size) {
+            double old = window.front();
+            window.pop_front();
+            sum -= old;
+            sum_sq -= old * old;
+        }
+    }
+
+    double getVol() const {
+        if (window.empty()) return 0.0;
+        double mean = sum / window.size();
+        double var = (sum_sq / window.size()) - (mean * mean);
+        return std::sqrt(var);
+    }
+};
+
 
 class TradeEngine {
 public:
     int getSig1() const { return sig1; }
     int getSig2() const { return sig2; }
     int getSig3() const { return sig3; }
+    int getSig4() const { return sig4; }
+    std::unordered_map<int, VolTracker> shortVol;
+    std::unordered_map<int, VolTracker> longVol;
     std::vector<Order> getOrder() const { return orders; }
     TradeEngine(const std::vector<MarketData>& feed)
-            : market_data(feed) {}
+            : market_data(feed) {
+                for (int i = 0; i < 10; ++i) {
+                    shortVol[i] = VolTracker(10);
+                    longVol[i]  = VolTracker(50);
+                }
+            }
 
     void process() {
         for (const auto& tick : market_data) {
@@ -74,7 +111,7 @@ public:
             bool b1 = signal1(tick);
             bool b2 = signal2(tick);
             bool b3 = signal3(tick);
-            bool b4 = false;
+            bool b4 = signal4(tick);
 
             // Apply signals
             bool buy = false, sell = false;
@@ -82,12 +119,23 @@ public:
             if (b1) { if (tick.price < 105.0) buy = true; else if (tick.price > 195.0) sell = true; }
             if (b2) { if (tick.price < getAvg(tick.instrument_id)) buy = true; else sell = true; }
             if (b3) { buy = true; }
+            if (b4) {
+                double curr_vol = shortVol[tick.instrument_id].getVol();
+                double base_vol = longVol[tick.instrument_id].getVol();
+
+                if (base_vol > 0.0 && curr_vol > 1.1 * base_vol) {
+                    buy = true;
+                } else if (base_vol > 0.0) {
+                    sell = true;
+                }
+            }
 
 
             if (buy || sell) {
                 if (b1) ++sig1;
                 if (b2) ++sig2;
                 if (b3) ++sig3;
+                if (b4) ++sig4;
                 auto now = std::chrono::high_resolution_clock::now();
                 Order o { tick.instrument_id, tick.price + (buy ? 0.01 : -0.01), buy, now };
                 orders.push_back(o);
@@ -113,7 +161,7 @@ public:
     }
 
 private:
-    int sig1 = 0, sig2 = 0, sig3 = 0;
+    int sig1 = 0, sig2 = 0, sig3 = 0, sig4 = 0;
     const std::vector<MarketData>& market_data;
     std::vector<Order> orders;
     std::vector<long long> latencies;
@@ -123,6 +171,8 @@ private:
         auto& hist = price_history[tick.instrument_id];
         hist.push_back(tick.price);
         if (hist.size() > 10) hist.erase(hist.begin());
+        shortVol[tick.instrument_id].add(tick.price);
+        longVol[tick.instrument_id].add(tick.price);
     }
 
     double getAvg(int id) {
@@ -152,6 +202,22 @@ private:
         double diff2 = hist[hist.size() - 1] - hist[hist.size() - 2];
         return diff1 > 0 && diff2 > 0;
     }
+    // Signal 4: Volatility-based
+    bool signal4(const MarketData& tick) {
+        double curr_vol = shortVol[tick.instrument_id].getVol();
+
+        double base_vol = longVol[tick.instrument_id].getVol();
+
+        if (base_vol <= 0.0) return false;
+        if (curr_vol > 1.05 * base_vol) {
+            return true;  // high vol → trigger sell
+        } 
+        else if (curr_vol < 0.95 * base_vol) {
+            return true;  // low vol → trigger buy
+        }
+
+        return false;
+    }
 };
 
 int main() {
@@ -175,7 +241,7 @@ int main() {
     std::cout << "Orders by signal: \n"
               << "S1=" << engine.getSig1() << "\n "
               << "S2=" << engine.getSig2() << "\n "
-              << "S3=" << engine.getSig3() << " \n";
-
+              << "S3=" << engine.getSig3() << "\n"
+              << "S4=" << engine.getSig4() << "\n";
     return 0;
 }
