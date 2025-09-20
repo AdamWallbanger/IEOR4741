@@ -4,6 +4,7 @@
 #include <random>
 #include <chrono>
 #include <cmath>
+#include <fstream>
 
 
 struct alignas(64) MarketData {
@@ -19,6 +20,19 @@ struct alignas(64) Order {
     std::chrono::high_resolution_clock::time_point timestamp;
 };
 
+void export_orders_csv(const std::vector<Order>& orders, const std::string& filename)
+{
+    std::ofstream out(filename);
+    out << "instrument_id,price,is_buy,timestamp_ns\n";
+    for (const auto& o : orders) {
+        long long ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                      o.timestamp.time_since_epoch()).count();
+        out << o.instrument_id << ','
+            << o.price << ','
+            << (o.is_buy ? 1 : 0) << ','
+            << ns << '\n';
+    }
+}
 
 class MarketDataFeed {
 public:
@@ -49,6 +63,7 @@ public:
     int getSig1() const { return sig1; }
     int getSig2() const { return sig2; }
     int getSig3() const { return sig3; }
+    std::vector<Order> getOrder() const { return orders; }
     TradeEngine(const std::vector<MarketData>& feed)
             : market_data(feed) {}
 
@@ -143,9 +158,8 @@ int main() {
     std::vector<MarketData> feed;
 
     MarketDataFeed generator(feed);
-
     auto start = std::chrono::high_resolution_clock::now();
-    generator.generateData(100000);
+    generator.generateData(1000000);
 
     TradeEngine engine(feed);
     engine.process();
@@ -156,7 +170,8 @@ int main() {
 
     engine.reportStats();
     std::cout << "Total Runtime (ms): " << runtime_ms << std::endl;
-
+    std:: vector<Order> orders = engine.getOrder();
+    export_orders_csv(orders, "orders.csv");
     std::cout << "Orders by signal: \n"
               << "S1=" << engine.getSig1() << "\n "
               << "S2=" << engine.getSig2() << "\n "
