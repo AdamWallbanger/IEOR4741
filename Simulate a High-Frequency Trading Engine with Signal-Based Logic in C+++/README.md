@@ -1,5 +1,5 @@
 ## Session 2 Simulate a High-Frequency Trading Engine with Signal-Based Logic in C+++
 * Signal 3 is being triggered the most
-* What could you optimize further? (Someone need to write this)
+* The current trading engine can be further optimized in several ways. First, the price history is updated using erase(), which is inefficient because it shifts all elements. A fixed-size ring buffer would make updates faster and constant time. Similarly, since the number of instruments is small and fixed, replacing the hash map with a simple array would reduce lookup overhead and improve cache efficiency. Another improvement is to maintain rolling averages instead of recalculating the mean each time, which would lower computational cost.
+In addition, efficiency can be improved by reusing a single random number generator instead of constructing one repeatedly, and by reserving capacity for vectors such as orders and latencies to avoid costly reallocations. Finally, the frequent use of high-resolution clock calls adds overhead; reducing unnecessary timing operations would make the latency measurement lighter. Together, these optimizations would allow the system to handle larger data volumes with lower latency.
 * With 100000 feeds of data, the entire process run for 168449ms, and with 1000000 feeds of data, it took 1595689ms which is approximately 10 times of the time.
-* 
