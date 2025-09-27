@@ -1,6 +1,3 @@
-# make_chart.py
-# Read results.csv and produce chart.png comparing virtual vs non-virtual throughput
-# Usage: python3 make_chart.py results.csv chart.png
 import sys, csv, collections
 import matplotlib.pyplot as plt
 
@@ -16,7 +13,6 @@ def main():
         for row in reader:
             rows.append(row)
 
-    # Aggregate: compute median ops/sec per (pattern, impl)
     data = collections.defaultdict(list)
     for r in rows:
         key = (r['pattern'], r['impl'])
