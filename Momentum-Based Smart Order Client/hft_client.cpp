@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <unistd.h>
+#include <deque>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
@@ -15,7 +16,7 @@ using namespace std;
 
 void receiveAndRespond(int socketFd, const string& name) {
     char buffer[BUFFER_SIZE];
-
+    deque<float> priceHistory;
     // Send client name
     send(socketFd, name.c_str(), name.size(), 0);
 
@@ -39,14 +40,33 @@ void receiveAndRespond(int socketFd, const string& name) {
 
         cout << "📥 Received price ID: " << priceId << ", Value: " << price << endl;
 
-        // Simulate reaction delay
-        this_thread::sleep_for(chrono::milliseconds(100 + rand() % 300));
+        if (priceHistory.size() >= 3)
+            priceHistory.pop_front();
+        priceHistory.push_back(price);
 
-        // Send order (price ID)
-        string order = to_string(priceId);
-        send(socketFd, order.c_str(), order.length(), 0);
+        if (priceHistory.size() == 3)
+        {
+            float a = priceHistory[0];
+            float b = priceHistory[1];
+            float c = priceHistory[2];
 
-        cout << "📤 Sent order for price ID: " << priceId << endl;
+            bool up = (a < b) && (b < c);
+            bool down = (a > b) && (b > c);
+
+            if (up || down)
+            {
+                // Simulate reaction delay
+                this_thread::sleep_for(chrono::milliseconds(100 + rand() % 300));
+                // Send order (price ID)
+                string order = to_string(priceId);
+                send(socketFd, order.c_str(), order.length(), 0);
+                cout << "📤Momentum up! Sending order for price ID " << priceId << endl;
+            }
+            else
+            {
+                cout << "No momentum. Ignoring price ID " << priceId << endl;
+            }
+        }
     }
 
     close(socketFd);
