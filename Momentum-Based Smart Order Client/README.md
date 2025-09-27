@@ -1,0 +1,2 @@
+# Strategy 
+* As the project title stated, it is a momentum driven order strategy. We observe the most recent 3 orders, and detect whether they have a moving trend, such as one lower/higher than each other. If so, we believe there is a momentum of the price, and the next price will follow the trend with an even higher/lower price. Hence, we would make profit by hitting the third order we observed.
