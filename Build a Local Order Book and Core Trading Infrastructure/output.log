@@ -1,0 +1,31 @@
+[Market] Best Bid: 100.1 x 300
+[Strategy] Placing SELL order at 100.1 x 50 (ID = 1)
+[Market] Best Ask: 100.2 x 250
+[Strategy] Placing SELL order at 100.1 x 50 (ID = 2)
+[Strategy] Placing SELL order at 100.1 x 50 (ID = 3)
+[Market] New Ask: 100.18 x 100
+[Strategy] Placing SELL order at 100.1 x 50 (ID = 4)
+[Strategy] Placing SELL order at 100.1 x 50 (ID = 5)
+[Market] Best Bid: 100.15 x 200
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 6)
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 7)
+[Market] New Ask: 100.2 x 250
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 8)
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 9)
+[Execution] Order 1 filled: 10
+[Order] Order 1 partially filled: 10 / 50
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 10)
+[Execution] Order 1 filled: 20
+[Order] Order 1 partially filled: 30 / 50
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 11)
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 12)
+[Execution] Order 2 filled: 50
+[Order] Order 2 completed (50 / 50) and removed
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 13)
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 14)
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 15)
+[Execution] Order 2 filled: 50
+[Order] Order 2 completed (50 / 50) and removed
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 16)
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 17)
+[Strategy] Placing SELL order at 100.15 x 50 (ID = 18)
