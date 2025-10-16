@@ -1,9 +1,6 @@
 # High-Performance C++ Order Book — Final Report
 
-**Author:** Tianci Chen  
 **Project:** Building a High-Performance C++ Order Book  
-**Deliverable:** Phase 6 – Reporting & Analysis
-
 ## Performance Summary
 
 | Implementation       | Insert (Mops/s) | Amend (Mops/s) | Delete (Mops/s) | Top-of-Book (ns) |
